@@ -28,7 +28,26 @@ class HomeScreen extends StatelessWidget {
                   ),
                 );
               },
-              child: const Text('Create New Bill'),
+              child: const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                child: Text('Create New Bill'),
+              ),
+            ),
+            const SizedBox(height: 12),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ProductEntryScreen(),
+                  ),
+                );
+              },
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+              child: const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                child: Text('GST Calculator'),
+              ),
             ),
           ],
         ),
