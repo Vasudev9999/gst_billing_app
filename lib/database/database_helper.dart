@@ -64,6 +64,37 @@ class DatabaseHelper {
     return results.map((map) => Product.fromMap(map)).toList();
   }
 
+  Future<int> updateProduct(Product product) async {
+    final db = await instance.database;
+    return await db.update(
+      'products',
+      {
+        'name': product.name,
+        'price': product.price,
+        'gstRate': product.gstRate,
+      },
+      where: 'id = ?',
+      whereArgs: [product.id],
+    );
+  }
+
+  Future<int> deleteProduct(int id) async {
+    final db = await instance.database;
+    return await db.delete('products', where: 'id = ?', whereArgs: [id]);
+  }
+
+  // Search products
+  Future<List<Product>> searchProducts(String query) async {
+    final db = await instance.database;
+    final results = await db.query(
+      'products',
+      where: 'name LIKE ?',
+      whereArgs: ['%$query%'],
+      orderBy: 'name',
+    );
+    return results.map((map) => Product.fromMap(map)).toList();
+  }
+
   // Invoice Operations
   Future<int> insertInvoice(Invoice invoice) async {
     final db = await instance.database;
@@ -100,5 +131,33 @@ class DatabaseHelper {
       return Invoice.fromMap(results.first);
     }
     return null;
+  }
+
+  // Search invoices
+  Future<List<Invoice>> searchInvoices(String query) async {
+    final db = await instance.database;
+    final results = await db.query(
+      'invoices',
+      where: 'invoiceNumber LIKE ? OR products LIKE ?',
+      whereArgs: ['%$query%', '%$query%'],
+      orderBy: 'dateTime DESC',
+    );
+    return results.map((map) => Invoice.fromMap(map)).toList();
+  }
+
+  // Get invoice counts
+  Future<int> getInvoiceCount() async {
+    final db = await instance.database;
+    final result = await db.rawQuery('SELECT COUNT(*) as count FROM invoices');
+    return Sqflite.firstIntValue(result) ?? 0;
+  }
+
+  // Get total revenue
+  Future<double> getTotalRevenue() async {
+    final db = await instance.database;
+    final result = await db.rawQuery(
+      'SELECT SUM(totalAmount) as total FROM invoices',
+    );
+    return (result.first['total'] as num?)?.toDouble() ?? 0.0;
   }
 }
