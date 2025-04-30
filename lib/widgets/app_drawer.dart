@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../screens/home_screen.dart';
 import '../screens/cart_screen.dart';
+import '../screens/transaction_history_screen.dart';
 
 class AppDrawer extends StatelessWidget {
   const AppDrawer({Key? key}) : super(key: key);
@@ -54,10 +55,12 @@ class AppDrawer extends StatelessWidget {
             leading: const Icon(Icons.history),
             title: const Text('Transaction History'),
             onTap: () {
-              // Will be implemented in Version 4
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Coming in Version 4!')),
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const TransactionHistoryScreen(),
+                ),
               );
             },
           ),

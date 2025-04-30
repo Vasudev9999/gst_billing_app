@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import '../services/cart_service.dart';
 import '../utils/gst_calculator.dart';
 import '../models/product.dart';
+import '../models/invoice.dart';
+import '../database/database_helper.dart';
 import 'home_screen.dart';
 
 class InvoiceScreen extends StatelessWidget {
@@ -177,7 +179,7 @@ class InvoiceScreen extends StatelessWidget {
                       children: [
                         ElevatedButton(
                           onPressed: () {
-                            _saveInvoice(context);
+                            _saveInvoice(context, cart);
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.green,
@@ -192,7 +194,7 @@ class InvoiceScreen extends StatelessWidget {
                         ),
                         ElevatedButton(
                           onPressed: () {
-                            _finishTransaction(context);
+                            _finishTransaction(context, cart);
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.blue,
@@ -277,42 +279,86 @@ class InvoiceScreen extends StatelessWidget {
     );
   }
 
-  void _saveInvoice(BuildContext context) {
-    // This functionality will be fully implemented in Version 4
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text(
-          'Invoice saved successfully (to be implemented in Version 4)',
-        ),
-      ),
-    );
+  Future<void> _saveInvoice(BuildContext context, CartService cart) async {
+    try {
+      // Create invoice model
+      final invoice = Invoice(
+        invoiceNumber: invoiceNumber,
+        dateTime: DateTime.now(),
+        products: List.from(cart.items),
+        subtotal: cart.subtotal,
+        totalCGST: cart.totalCGST,
+        totalSGST: cart.totalSGST,
+        totalAmount: cart.totalAmount,
+      );
+
+      // Save to database
+      await DatabaseHelper.instance.insertInvoice(invoice);
+
+      // Show success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Invoice saved successfully!')),
+      );
+    } catch (e) {
+      // Show error message
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed to save invoice: $e')));
+    }
   }
 
-  void _finishTransaction(BuildContext context) {
-    // Clear the cart and return to home
-    showDialog(
-      context: context,
-      builder:
-          (ctx) => AlertDialog(
-            title: const Text('Complete Transaction'),
-            content: const Text(
-              'Transaction completed successfully. Start a new bill?',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Provider.of<CartService>(context, listen: false).clearCart();
-                  Navigator.of(ctx).pop();
-                  Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(builder: (context) => const HomeScreen()),
-                    (route) => false,
-                  );
-                },
-                child: const Text('OK'),
+  Future<void> _finishTransaction(
+    BuildContext context,
+    CartService cart,
+  ) async {
+    try {
+      // Save invoice first
+      final invoice = Invoice(
+        invoiceNumber: invoiceNumber,
+        dateTime: DateTime.now(),
+        products: List.from(cart.items),
+        subtotal: cart.subtotal,
+        totalCGST: cart.totalCGST,
+        totalSGST: cart.totalSGST,
+        totalAmount: cart.totalAmount,
+      );
+
+      await DatabaseHelper.instance.insertInvoice(invoice);
+
+      // Clear the cart and return to home
+      showDialog(
+        context: context,
+        builder:
+            (ctx) => AlertDialog(
+              title: const Text('Transaction Complete'),
+              content: const Text(
+                'Invoice saved successfully. Start a new bill?',
               ),
-            ],
-          ),
-    );
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Provider.of<CartService>(
+                      context,
+                      listen: false,
+                    ).clearCart();
+                    Navigator.of(ctx).pop();
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const HomeScreen(),
+                      ),
+                      (route) => false,
+                    );
+                  },
+                  child: const Text('OK'),
+                ),
+              ],
+            ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed to save invoice: $e')));
+    }
   }
 }
