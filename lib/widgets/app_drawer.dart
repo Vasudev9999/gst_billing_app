@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../screens/home_screen.dart';
+import '../screens/cart_screen.dart';
 
 class AppDrawer extends StatelessWidget {
   const AppDrawer({Key? key}) : super(key: key);
@@ -12,9 +13,20 @@ class AppDrawer extends StatelessWidget {
         children: [
           DrawerHeader(
             decoration: BoxDecoration(color: Theme.of(context).primaryColor),
-            child: const Text(
-              'GST Billing App',
-              style: TextStyle(color: Colors.white, fontSize: 24),
+            child: const Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Text(
+                  'TATA Retail Solutions',
+                  style: TextStyle(color: Colors.white, fontSize: 20),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  'GST Billing App',
+                  style: TextStyle(color: Colors.white70, fontSize: 16),
+                ),
+              ],
             ),
           ),
           ListTile(
@@ -28,13 +40,24 @@ class AppDrawer extends StatelessWidget {
             },
           ),
           ListTile(
+            leading: const Icon(Icons.shopping_cart),
+            title: const Text('Current Bill'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const CartScreen()),
+              );
+            },
+          ),
+          ListTile(
             leading: const Icon(Icons.history),
             title: const Text('Transaction History'),
             onTap: () {
               // Will be implemented in Version 4
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Coming in future versions!')),
+                const SnackBar(content: Text('Coming in Version 4!')),
               );
             },
           ),

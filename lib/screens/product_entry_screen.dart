@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../models/product.dart';
+import '../services/cart_service.dart';
 import '../utils/gst_calculator.dart';
+import 'cart_screen.dart';
 
 class ProductEntryScreen extends StatefulWidget {
   const ProductEntryScreen({Key? key}) : super(key: key);
@@ -44,10 +47,85 @@ class _ProductEntryScreenState extends State<ProductEntryScreen> {
     }
   }
 
+  void _addToCart() {
+    if (_currentProduct != null) {
+      // Add to cart using Provider
+      Provider.of<CartService>(
+        context,
+        listen: false,
+      ).addProduct(_currentProduct!);
+
+      // Show success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${_currentProduct!.name} added to bill'),
+          action: SnackBarAction(
+            label: 'VIEW BILL',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const CartScreen()),
+              );
+            },
+          ),
+        ),
+      );
+
+      // Reset form
+      setState(() {
+        _showCalculation = false;
+        _productNameController.clear();
+        _priceController.clear();
+        _currentProduct = null;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final cartItemCount = Provider.of<CartService>(context).items.length;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('GST Calculator')),
+      appBar: AppBar(
+        title: const Text('Add Product to Bill'),
+        actions: [
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.shopping_cart),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const CartScreen()),
+                  );
+                },
+              ),
+              if (cartItemCount > 0)
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: Container(
+                    padding: const EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    constraints: const BoxConstraints(
+                      minWidth: 16,
+                      minHeight: 16,
+                    ),
+                    child: Text(
+                      '$cartItemCount',
+                      style: const TextStyle(color: Colors.white, fontSize: 10),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ],
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -164,16 +242,7 @@ class _ProductEntryScreenState extends State<ProductEntryScreen> {
               const SizedBox(height: 24),
               Center(
                 child: ElevatedButton(
-                  onPressed: () {
-                    // To be implemented in Version 3 - Add to cart functionality
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text(
-                          'Add to cart functionality coming in Version 3!',
-                        ),
-                      ),
-                    );
-                  },
+                  onPressed: _addToCart,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,
                   ),

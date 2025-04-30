@@ -43,9 +43,9 @@ class BillScreen extends StatelessWidget {
             const SizedBox(height: 16),
             const Divider(),
 
-            // This will be a ListView in Version 3
+            // Items list now shown via CartScreen instead
             const Text(
-              'Bill Items (Coming in Version 3)',
+              'Bill Items (Please use Cart Screen)',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
 
